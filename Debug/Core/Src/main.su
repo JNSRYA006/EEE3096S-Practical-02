@@ -5,9 +5,9 @@
 ../Core/Src/main.c:306:13:MX_DMA_Init	16	static
 ../Core/Src/main.c:324:13:MX_GPIO_Init	56	static
 ../Core/Src/main.c:353:6:pause_sec	32	static
-../Core/Src/main.c:367:9:decToBcd	16	static
-../Core/Src/main.c:376:5:bcdToDec	16	static
-../Core/Src/main.c:387:6:setTime	32	static
-../Core/Src/main.c:404:6:getTime	16	static
-../Core/Src/main.c:423:5:epochFromTime	16	static
-../Core/Src/main.c:454:6:Error_Handler	8	static,ignoring_inline_asm
+../Core/Src/main.c:367:9:decToBcd	24	static
+../Core/Src/main.c:375:5:bcdToDec	16	static
+../Core/Src/main.c:383:6:setTime	32	static
+../Core/Src/main.c:400:6:getTime	16	static
+../Core/Src/main.c:419:5:epochFromTime	16	static
+../Core/Src/main.c:450:6:Error_Handler	8	static,ignoring_inline_asm

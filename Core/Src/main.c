@@ -150,7 +150,7 @@ int main(void){
 	//TASK 1
 	//First run this with nothing else in the loop and scope pin PC8 on an oscilloscope
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-	pause_sec(20);
+	pause_sec(5);
 	//TO DO:
 	//TASK 6
 
@@ -367,21 +367,17 @@ void pause_sec(float x)
 uint8_t decToBcd(int val)
 {
     /* Convert normal decimal numbers to binary coded decimal*/
-	//TO DO:
 	//TASK 3
 
-	//YOUR CODE HERE
+	return (uint8_t)((val/10*16) + (val%10)); // Code referenced from https://controllerstech.com/ds3231-rtc-module-with-stm32/
 }
 
 int bcdToDec(uint8_t val)
 {
     /* Convert binary coded decimal to normal decimal numbers */
-	//TO DO:
 	//TASK 3
-	//Complete the BCD to decimal function
 
-	//YOUR CODE HERE
-
+	return (int)((val/16*10) + (val%16)); // Code referenced from https://controllerstech.com/ds3231-rtc-module-with-stm32/
 }
 
 void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, uint8_t month, uint8_t year)
