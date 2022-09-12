@@ -137,6 +137,7 @@ int main(void){
   //TO DO
   //TASK 6
   //YOUR CODE HERE
+    // setTime(00, 00, 00, 00, 00, 00, 00);
 
 
   /* USER CODE END 2 */
@@ -378,6 +379,7 @@ int bcdToDec(uint8_t val)
 	//TASK 3
 
 	return (int)((val/16*10) + (val%16)); // Code referenced from https://controllerstech.com/ds3231-rtc-module-with-stm32/
+    // return ((val>>4)*10+(val&0x0F));
 }
 
 void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, uint8_t month, uint8_t year)
@@ -393,7 +395,18 @@ void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, 
 	//fill in the address of the RTC, the address of the first register to write anmd the size of each register
 	//The function and RTC supports multiwrite. That means we can give the function a buffer and first address
 	//and it will write 1 byte of data, increment the register address, write another byte and so on
+    set_time[0] = decToBcd(sec);
+    set_time[1] = decToBcd(min);
+    set_time[2] = decToBcd(hour);
+    set_time[3] = decToBcd(dow);
+    set_time[4] = decToBcd(dom);
+    set_time[5] = decToBcd(month);
+    set_time[6] = decToBcd(year);
+    
 	//HAL_I2C_Mem_Write(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, set_time, 7, 1000);
+    HAL_I2C_Mem_Write(&hi2c1, DS3231_ADDRESS, 0x00, 1, set_time, 7, 1000);
+    
+    // Code referenced from https://controllerstech.com/ds3231-rtc-module-with-stm32/
 
 }
 
@@ -410,9 +423,19 @@ void getTime (void)
 	//The function and RTC supports multiread. That means we can give the function a buffer and first address
 	//and it will read 1 byte of data, increment the register address, write another byte and so on
 	//HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, get_time, 7, 1000);
+    HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, 0x00, 1, get_time, 7, 1000);
 
 
 	//YOUR CODE HERE
+    time.seconds = bcdToDec(get_time[0]);
+    time.minutes = bcdToDec(get_time[1]);
+    time.hour = bcdToDec(get_time[2]);
+    time.dayofweek = bcdToDec(get_time[3]);
+    time.dayofmonth = bcdToDec(get_time[4]);
+    time.month = bcdToDec(get_time[5]);
+    time.year = bcdToDec(get_time[6]);
+    
+    // Code referenced from https://controllerstech.com/ds3231-rtc-module-with-stm32/
 
 }
 
