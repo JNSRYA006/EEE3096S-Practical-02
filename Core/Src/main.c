@@ -137,6 +137,7 @@ int main(void){
   //TO DO
   //TASK 6
   //YOUR CODE HERE
+  setTime(10,20,30,1,1,5,22);
 
 
   /* USER CODE END 2 */
@@ -150,11 +151,11 @@ int main(void){
 	//TASK 1
 	//First run this with nothing else in the loop and scope pin PC8 on an oscilloscope
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-	pause_sec(5);
+	pause_sec(1);
 	//TO DO:
 	//TASK 6
-
-	//sprintf(buffer, "%d \r\n", 55555555555555);
+	getTime();
+	//sprintf(buffer, "%s \r\n", "3096 sucks");
 	//This creates a string "55555555555555" with a pointer called buffer
 
 	//Transmit data via UART
@@ -162,8 +163,12 @@ int main(void){
 	//HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
 
 
+	sprintf(buffer, "%02d:%02d:%02d\r\n\r\n", time.hour, time.minutes, time.seconds);
+	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
 
-	//YOUR CODE HERE
+	sprintf(buffer, "%02d-%02d-20%02d\r\n\r\n", time.dayofmonth, time.month, time.year);
+	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+
 
 
 
@@ -378,6 +383,7 @@ int bcdToDec(uint8_t val)
 	//TASK 3
 
 	return (int)((val/16*10) + (val%16)); // Code referenced from https://controllerstech.com/ds3231-rtc-module-with-stm32/
+    // return ((val>>4)*10+(val&0x0F));
 }
 
 void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, uint8_t month, uint8_t year)
@@ -393,8 +399,18 @@ void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, 
 	//fill in the address of the RTC, the address of the first register to write anmd the size of each register
 	//The function and RTC supports multiwrite. That means we can give the function a buffer and first address
 	//and it will write 1 byte of data, increment the register address, write another byte and so on
+    set_time[0] = decToBcd(sec);
+    set_time[1] = decToBcd(min);
+    set_time[2] = decToBcd(hour);
+    set_time[3] = decToBcd(dow);
+    set_time[4] = decToBcd(dom);
+    set_time[5] = decToBcd(month);
+    set_time[6] = decToBcd(year);
+    
 	//HAL_I2C_Mem_Write(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, set_time, 7, 1000);
-
+    HAL_I2C_Mem_Write(&hi2c1, DS3231_ADDRESS, 0x00, 1, set_time, 7, 1000);
+    
+    // Code referenced from https://controllerstech.com/ds3231-rtc-module-with-stm32/
 }
 
 void getTime (void)
@@ -410,10 +426,19 @@ void getTime (void)
 	//The function and RTC supports multiread. That means we can give the function a buffer and first address
 	//and it will read 1 byte of data, increment the register address, write another byte and so on
 	//HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, get_time, 7, 1000);
+    HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, 0x00, 1, get_time, 7, 1000);
 
 
 	//YOUR CODE HERE
-
+    time.seconds = bcdToDec(get_time[0]);
+    time.minutes = bcdToDec(get_time[1]);
+    time.hour = bcdToDec(get_time[2]);
+    time.dayofweek = bcdToDec(get_time[3]);
+    time.dayofmonth = bcdToDec(get_time[4]);
+    time.month = bcdToDec(get_time[5]);
+    time.year = bcdToDec(get_time[6]);
+    
+    // Code referenced from https://controllerstech.com/ds3231-rtc-module-with-stm32/
 }
 
 int epochFromTime(TIME time){
@@ -424,21 +449,35 @@ int epochFromTime(TIME time){
 	//It is define above as EPOCH_2022. You can work from that and ignore the effects of leap years/seconds
 
 	//YOUR CODE HERE
-/**
-	switch(months){
-	case 1:
-		day += 31;
-	break;
+    
+    int day = time.dayofmonth;
+    int month = time.month;
+    int year = time.year;
+    int totalDays = day;
+    
+    switch(month){
+        case 1:                                      break;
+        case 2: totalDays += 31;                     break;
+        case 3: totalDays += (28 + 31);              break;
+        case 4: totalDays += (28 + 31*2);            break;
+        case 5: totalDays += (28 + 30 + 31*2);       break;
+        case 6: totalDays += (28 + 30 + 31*3);       break;
+        case 7: totalDays += (28 + 30*2 + 31*3);     break;
+        case 8: totalDays += (28 + 30*2 + 31*4);     break;
+        case 9: totalDays += (28 + 30*2 + 31*5);     break;
+        case 10: totalDays += (28 + 30*3 + 31*5);    break;
+        case 11: totalDays += (28 + 30*3 + 31*6);    break;
+        case 12: totalDays += (28 + 30*4 + 31*6);    break;
+        default: totalDays = day;
+    }
+    
+    int seconds = time.seconds;
+    int minutes = time.minutes;
+    int hours = time.hour;
+    
+    int totalSeconds = (year-22)*31536000 + totalDays*86400 + hours*3600 + minutes*60 + seconds;
 
-	/*
-	 *COMPLETE THE SWITCH CASE OR INSERT YOUR OWN LOGIC
-	 */
-
-	//default:
-		//day = day;
-	//}
-
-	return EPOCH_2022 ;
+	return EPOCH_2022 + totalSeconds ;
 }
 
 /* USER CODE END 4 */
